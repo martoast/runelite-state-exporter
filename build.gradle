@@ -28,11 +28,36 @@ dependencies {
 }
 
 group = 'com.rsbot'
+version = '0.1.0'
 
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
 	options.release.set(11)
 	options.compilerArgs.add('-Xlint:deprecation')
+}
+
+// Include runelite-plugin.properties (and any res files) at the jar
+// root — RuneLite's sideload loader reads this to discover the plugin
+// class. Without it, the jar drops into ~/.runelite/sideloaded-plugins
+// but doesn't register a plugin.
+jar {
+	from(rootDir) {
+		include 'runelite-plugin.properties'
+	}
+}
+
+// One-command sideload installer: builds the jar + drops a copy into
+// the RuneLite sideload directory. Restart RuneLite afterwards to
+// pick up the new build.
+tasks.register('installPlugin', Copy) {
+	dependsOn 'jar'
+	def sideloadDir = "${System.getProperty('user.home')}/.runelite/sideloaded-plugins"
+	from(jar.archiveFile)
+	into sideloadDir
+	doLast {
+		println "installed → ${sideloadDir}/${jar.archiveFileName.get()}"
+		println "restart RuneLite to load the new build"
+	}
 }
 
 tasks.register('run', JavaExec) {
