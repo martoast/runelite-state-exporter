@@ -32,6 +32,7 @@ group = 'com.rsbot'
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
 	options.release.set(11)
+	options.compilerArgs.add('-Xlint:deprecation')
 }
 
 tasks.register('run', JavaExec) {
